@@ -1,22 +1,27 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const fetch = require('node-fetch');
+const axios = require('axios');
 
 const netlifyToken = process.env.NETLIFY_TOKEN;
 const apiUrl = 'https://api.netlify.com/api/v1/';
 
 const apiGet = async ({ path }) => {
   try {
+    console.log(`GET: `, path);
     const config = {
       method: 'get',
+      url: new URL(path, apiUrl).toString(),
       headers: {
-        'Authorization': `Bearer ${netlifyToken}`,
+        Authorization: `Bearer ${netlifyToken}`,
       },
     };
-    const response = await fetch(new URL(path, apiUrl).toString(), config);
+    const response = await axios(config);
     return response.data;
   } catch (err) {
-    return err.response.data.message || err;
+    if (err && err.response && err.response.data && err.response.data.message) {
+      core.setFailed(err.response.data.message);
+    }
+    core.setFailed(err.message);
   }
 };
 
@@ -28,7 +33,7 @@ const getCurrentDeploy = async ({ siteId, sha }) => {
         deploy.commit_ref === sha && ['production', 'deploy-preview', 'branch-deploy'].includes(deploy.context)
     );
   } catch (err) {
-    return err.response.data.message || err;
+    core.setFailed(err.message);
   }
 };
 
@@ -49,12 +54,12 @@ const waitForDeploy = async ({ siteId, sha }) => {
   }
 };
 
-const waitForLive = async ({ siteId, sha, MAX_TIMEOUT, headers }) => {
+const waitForLive = async ({ siteId, sha, MAX_TIMEOUT }) => {
   const iterations = MAX_TIMEOUT / 2;
   let currentDeploy = null;
   for (let i = 0; i < iterations; i++) {
     try {
-      currentDeploy = await getCurrentDeploy({ siteId, sha, headers });
+      currentDeploy = await getCurrentDeploy({ siteId, sha });
       if (currentDeploy) {
         break;
       } else {
@@ -101,7 +106,8 @@ const run = async () => {
     const sha = github.context.payload.pull_request
       ? github.context.payload.pull_request.head.sha
       : github.context.payload.head_commit.id;
-    await waitForLive({ MAX_TIMEOUT, siteId, sha, headers });
+
+    await waitForLive({ MAX_TIMEOUT, siteId, sha });
   } catch (error) {
     core.setFailed(error.message);
   }

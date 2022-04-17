@@ -1,10 +1,11 @@
 {
   "name": "wait-for-netlify-action",
-  "version": "1.0.0",
+  "version": "3.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "prettier -c index.js package.json README.md"
+    "test": "prettier -c index.js package.json README.md",
+    "start": "cross-env NETLIFY_TOKEN=7TEQ705BZ-CFpXgwS1o5D5rW899dMv3SiOJkdRkJCR8 node ./index.js"
   },
   "keywords": [],
   "author": "",
@@ -12,9 +13,10 @@
   "dependencies": {
     "@actions/core": "^1.2.6",
     "@actions/github": "^2.0.0",
-    "node-fetch": "^2.6.7"
+    "axios": "^0.26.1"
   },
   "devDependencies": {
+    "cross-env": "^7.0.3",
     "prettier": "^2.5.1"
   }
 }
