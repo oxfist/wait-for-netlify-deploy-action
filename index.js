@@ -7,11 +7,14 @@ const apiUrl = 'https://api.netlify.com/api/v1/';
 
 const apiGet = async ({ path }) => {
   try {
-    const response = await axios.get(new URL(path, apiUrl).toString(), {
-      headers: {
-        Authorization: `Bearer ${netlifyToken}`,
-      },
-    });
+    const config = {
+      method: 'get',
+      url: new URL(path, apiUrl).toString(),
+      headers: { 
+        'Authorization': 'Bearer ' + netlifyToken,
+      }
+    };
+    const response = await axios(config);
     return response.data;
   } catch (err) {
     return err.response.data.message || err;
@@ -88,6 +91,10 @@ const run = async () => {
 
     if (!siteId) {
       core.setFailed('Required field `siteId` was not provided');
+    }
+
+    if (!netlifyToken) {
+      core.setFailed('Required env `NETLIFY_TOKEN` was not provided');
     }
 
     const MAX_TIMEOUT = Number(core.getInput('max_timeout')) || 120;
