@@ -1,8 +1,10 @@
-name: 'Wait Netlify to Deploy'
+name: 'Wait Netlify Deployment with API Token'
 description: 'Wait for Netlify to complete live site or preview deploy'
 branding:
   icon: 'clock'
   color: 'blue'
+env:
+  NETLIFY_TOKEN: 'Netlify personal access token'
 inputs:
   site_id:
     description: 'The Netlify site API id'
