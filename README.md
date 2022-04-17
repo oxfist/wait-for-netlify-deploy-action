@@ -65,7 +65,7 @@ Netlify permalink deploy has disabled crawling option. Reponse header for the si
 ```yml
 steps:
   - name: Wait for Netlify Deploy
-    uses: denar90/wait-for-netlify-action@v2.0.2
+    uses: jlevy-io/wait-for-netlify-deploy-with-headers@v1.0.0
     id: waitForNetlify
     with:
       site_id: 'c8e5be00-c431-44a5-bb0d-a179e1dd72f9'
