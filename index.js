@@ -1,6 +1,6 @@
 const core = require('@actions/core');
 const github = require('@actions/github');
-const axios = require('axios');
+const fetch = require('node-fetch');
 
 const netlifyToken = process.env.NETLIFY_TOKEN;
 const apiUrl = 'https://api.netlify.com/api/v1/';
@@ -9,12 +9,11 @@ const apiGet = async ({ path }) => {
   try {
     const config = {
       method: 'get',
-      url: new URL(path, apiUrl).toString(),
-      headers: { 
-        'Authorization': 'Bearer ' + netlifyToken,
-      }
+      headers: new Headers({
+        Authorization: `Bearer ${netlifyToken}`,
+      }),
     };
-    const response = await axios(config);
+    const response = await fetch(new URL(path, apiUrl).toString(), config);
     return response.data;
   } catch (err) {
     return err.response.data.message || err;
