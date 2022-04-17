@@ -22,10 +22,18 @@ After pushing to master, action takes head commit, fetch Netlify deploy to relat
 
 Netlify has [deploy previews](https://docs.netlify.com/site-deploys/deploy-previews/). On created pull request, Netlify spins up separate deploy to allow user see their changes. Action takes pull request commit, fetches Netlify deploy and checks the status. After deploy is `ready` - it output URL (like - `https://{deployId}--modest-murdock-6e792e.netlify.app`) for next action usage.
 
-> Action uses permalink e.g. `https://61bf94e5e73b010007ea2a05--modest-murdock-6e792e.netlify.app` instead of deploy preview URL like `https://deploy-preview-1--modest-murdock-6e792e.netlify.app`. 
-Permalink has pure site deploy without any additional scripts, while deploy preview enables more collaboration using [Netlify Drawer](https://docs.netlify.com/site-deploys/deploy-previews/#collaborative-deploy-previews).
+> Action uses permalink e.g. `https://61bf94e5e73b010007ea2a05--modest-murdock-6e792e.netlify.app` instead of deploy preview URL like `https://deploy-preview-1--modest-murdock-6e792e.netlify.app`.
+> Permalink has pure site deploy without any additional scripts, while deploy preview enables more collaboration using [Netlify Drawer](https://docs.netlify.com/site-deploys/deploy-previews/#collaborative-deploy-previews).
 
-Read Netlify [docs](https://docs.netlify.com/site-deploys/overview/#definitions) about deploy deifnitions. 
+Read Netlify [docs](https://docs.netlify.com/site-deploys/overview/#definitions) about deploy deifnitions.
+
+This action uses the Netlify API to always retrieve the correct deployment being built. You will need to generate a [Personal Access Token](https://app.netlify.com/user/applications/personal) to use and pass it as the `NETLIFY_TOKEN` environment variable.
+
+## Env
+
+### `NETLIFY_TOKEN`
+
+**Required.** Your Netlify [Personal Access Token](https://app.netlify.com/user/applications/personal) to use for API access. This should be set as a GitHub secret, see example.
 
 ## Inputs
 
@@ -52,7 +60,7 @@ Hence this repo is a fork and keeps track of commits history for that action, bu
 
 ### Recipe using with Lighthouse CI GitHub Action
 
-Netlify permalink deploy has disabled crawling option. Reponse header for the site is set to `x-robots-tag: noindex` not to crawl other site deploy rather than main site. You have to consider that while configuring action, otherwise Lighthouse will low down score for SEO category.  
+Netlify permalink deploy has disabled crawling option. Reponse header for the site is set to `x-robots-tag: noindex` not to crawl other site deploy rather than main site. You have to consider that while configuring action, otherwise Lighthouse will low down score for SEO category.
 
 ```yml
 name: Lighthouse CI for Netlify site
@@ -76,7 +84,7 @@ jobs:
         uses: denar90/wait-for-netlify-action@v2.0.2
         id: waitForNetlify
         with:
-          site_id: "c8e5be00-c431-44a5-bb0d-a179e1dd72f9"
+          site_id: 'c8e5be00-c431-44a5-bb0d-a179e1dd72f9'
       - name: Set LHCI config
         shell: bash
         run: echo "::set-output name=file::${{github.event_name == 'pull_request' && 'lighthouserc-assertions-preview.json' || 'lighthouserc-assertions.json'}}"
