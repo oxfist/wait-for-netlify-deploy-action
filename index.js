@@ -9,9 +9,9 @@ const apiGet = async ({ path }) => {
   try {
     const config = {
       method: 'get',
-      headers: new Headers({
-        Authorization: `Bearer ${netlifyToken}`,
-      }),
+      headers: {
+        'Authorization': `Bearer ${netlifyToken}`,
+      },
     };
     const response = await fetch(new URL(path, apiUrl).toString(), config);
     return response.data;
