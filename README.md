@@ -64,7 +64,7 @@ Netlify permalink deploy has disabled crawling option. Reponse header for the si
 
 ```yml
 steps:
-  - name: Wait for Netlify Deploy
+  - name: Wait Netlify Deployment with API Token
     uses: jlevy-io/wait-for-netlify-deploy-with-headers@v1.0.0
     id: waitForNetlify
     with:
