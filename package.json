@@ -4,8 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "prettier -c index.js package.json README.md",
-    "start": "cross-env NETLIFY_TOKEN=7TEQ705BZ-CFpXgwS1o5D5rW899dMv3SiOJkdRkJCR8 node ./index.js"
+    "test": "prettier -c index.js package.json README.md"
   },
   "keywords": [],
   "author": "",
