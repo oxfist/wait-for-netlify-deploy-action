@@ -37,9 +37,10 @@ const getCurrentDeploy = async ({ siteId, sha }) => {
   }
 };
 
-const waitForDeploy = async ({ siteId, sha }) => {
+const waitForDeploy = async ({ siteId, sha, attemptsRemaining }) => {
   const currentDeploy = await getCurrentDeploy({ siteId, sha });
-  if (currentDeploy) {
+  console.log(`Attempts remaining: ${attemptsRemaining}`);
+  if (currentDeploy && attemptsRemaining > 0) {
     if (currentDeploy.state === 'ready') {
       console.log('deploy is ready');
       return currentDeploy;
@@ -48,7 +49,7 @@ const waitForDeploy = async ({ siteId, sha }) => {
       return null;
     } else {
       await new Promise((r) => setTimeout(r, 10000));
-      return waitForDeploy({ siteId, sha });
+      return waitForDeploy({ siteId, sha, attemptsRemaining: attemptsRemaining - 1 });
     }
   } else {
     return null;
@@ -57,13 +58,16 @@ const waitForDeploy = async ({ siteId, sha }) => {
 
 const waitForLive = async ({ siteId, sha, MAX_TIMEOUT }) => {
   const iterations = MAX_TIMEOUT / 10;
+  let attemptsRemaining = iterations;
   let currentDeploy = null;
+
   for (let i = 0; i < iterations; i++) {
     try {
       currentDeploy = await getCurrentDeploy({ siteId, sha });
       if (currentDeploy) {
         break;
       } else {
+        attemptsRemaining--;
         await new Promise((r) => setTimeout(r, 10000));
       }
     } catch (e) {
@@ -77,7 +81,7 @@ const waitForLive = async ({ siteId, sha, MAX_TIMEOUT }) => {
     core.setFailed(`Can't find Netlify related to commit: ${sha}`);
   }
 
-  currentDeploy = await waitForDeploy({ siteId, sha });
+  currentDeploy = await waitForDeploy({ siteId, sha, attemptsRemaining });
   if (currentDeploy) {
     let url = currentDeploy.deploy_ssl_url;
     // compose permalink URL without Netlify Preview drawer
