@@ -28,7 +28,6 @@ const apiGet = async ({ path }) => {
 const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
   try {
     const deploys = await apiGet({ path: `sites/${siteId}/deploys` });
-    console.log(deploys.map((d) => d.context));
     return deploys.find(
       (deploy) =>
         deploy.commit_ref === sha &&
@@ -46,10 +45,10 @@ const waitForDeploy = async ({ siteId, isPreview, sha, attemptsRemaining }) => {
 
   if (currentDeploy && attemptsRemaining > 0) {
     if (currentDeploy.state === 'ready') {
-      console.log('deploy is ready');
+      console.log('Deploy is ready');
       return currentDeploy;
     } else if (currentDeploy.state === 'error') {
-      console.log('deploy failed');
+      console.log('Deploy failed');
       return null;
     } else {
       await new Promise((r) => setTimeout(r, 10_000));
@@ -71,7 +70,6 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, MAX_TIMEOUT }) => {
   let attemptsRemaining = iterations;
   let currentDeploy = null;
 
-  console.log('DEBUG: isPreview - ', isPreview);
   console.log(`Waiting for a ${isPreview ? 'PREVIEW' : 'NON-PREVIEW'} deploy`);
   for (let i = 0; i < iterations; i++) {
     try {
