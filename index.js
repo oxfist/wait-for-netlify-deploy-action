@@ -100,6 +100,9 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, MAX_TIMEOUT }) => {
   if (currentDeploy) {
     let url = currentDeploy.deploy_ssl_url;
 
+    console.log(currentDeploy);
+    console.log(currentDeploy.id);
+    console.log(currentDeploy.name);
     // compose permalink URL without Netlify Preview drawer
     if (['deploy-preview', 'production'].includes(currentDeploy.context)) {
       url = `https://${currentDeploy.id}--${currentDeploy.name}.netlify.app`;
