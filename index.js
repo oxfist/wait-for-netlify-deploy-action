@@ -28,6 +28,7 @@ const apiGet = async ({ path }) => {
 const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
   try {
     const deploys = await apiGet({ path: `sites/${siteId}/deploys` });
+    console.log(deploys.map((d) => d.context));
     return deploys.find(
       (deploy) =>
         deploy.commit_ref === sha &&
@@ -70,6 +71,8 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, MAX_TIMEOUT }) => {
   let attemptsRemaining = iterations;
   let currentDeploy = null;
 
+  console.log('DEBUG: isPreview - ', isPreview);
+  console.log(`Waiting for a ${isPreview ? 'PREVIEW' : 'NON-PREVIEW'} deploy`);
   for (let i = 0; i < iterations; i++) {
     try {
       currentDeploy = await getCurrentDeploy({ siteId, isPreview, sha });
@@ -140,9 +143,7 @@ const run = async () => {
       );
     }
 
-    console.log(
-      `Waiting for a ${isPreview ? 'PREVIEW' : 'NON-PREVIEW'} deploy`
-    );
+    console.log('Waiting for live deploy');
     const deployUrl = await waitForLiveDeploy({
       siteId,
       isPreview,
