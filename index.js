@@ -128,7 +128,7 @@ const run = async () => {
     }
 
     const siteId = core.getInput('site_id', { required: true });
-    const isPreview = core.getInput('is_preview', { required: true });
+    const isPreview = core.getBooleanInput('is_preview', { required: true });
     const SHA = github.context.payload.pull_request
       ? github.context.payload.pull_request.head.sha
       : github.context.payload.head_commit.id;
