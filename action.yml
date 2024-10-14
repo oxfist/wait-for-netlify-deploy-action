@@ -1,5 +1,5 @@
 name: 'Wait for Netlify [Preview] Deploy'
-description: 'Wait for Netlify to complete live site or preview deploy'
+description: 'Wait for Netlify [Preview] Deploy to complete'
 branding:
   icon: 'clock'
   color: 'black'
