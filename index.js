@@ -28,10 +28,10 @@ const apiGet = async ({ path }) => {
 const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
   try {
     const deploys = await apiGet({ path: `sites/${siteId}/deploys` });
-    return deploys.find((deploy) =>
-      deploy.commit_ref === sha && deploy.context === isPreview
-        ? 'deploy-preview'
-        : 'production'
+    return deploys.find(
+      (deploy) =>
+        deploy.commit_ref === sha &&
+        deploy.context === (isPreview ? 'deploy-preview' : 'production')
     );
   } catch (err) {
     core.setFailed(err.message);
