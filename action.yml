@@ -1,20 +1,23 @@
-name: 'Wait Netlify Deployment with API Token'
+name: 'Wait for Netlify [Preview] Deploy'
 description: 'Wait for Netlify to complete live site or preview deploy'
 branding:
   icon: 'clock'
-  color: 'blue'
-env:
-  NETLIFY_TOKEN: 'Netlify personal access token'
+  color: 'black'
 inputs:
   site_id:
-    description: 'The Netlify site API id'
+    description: '(string) The Netlify site API ID'
+    required: true
+  is_preview:
+    description:
+      '(boolean) Is waited for deployment a preview? Possible values: true,
+      false'
     required: true
   max_timeout:
-    description: 'The max time to run the action'
+    description: '(number) The max time to run the action'
     required: false
 outputs:
   url:
-    description: 'The fully qualified deploy URL'
+    description: 'The fully qualified [Preview] Deploy URL'
 runs:
-  using: 'node16'
+  using: 'node20'
   main: 'index.js'
