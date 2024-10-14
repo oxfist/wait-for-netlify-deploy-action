@@ -10,7 +10,7 @@ Basic Usage
 ```yaml
 steps:
   - name: Waiting for a Netlify [Preview] Deploy to be live
-    uses: oxfist/wait-for-netlify-deploy-action@2.0.0 # Latest release tag
+    uses: oxfist/wait-for-netlify-deploy-action@v4.0.0 # Latest release tag
     id: waitForLive
     with:
       site_id: 'curious-hummingbird-9f3bcd' # This is a fake example ID

@@ -125,7 +125,6 @@ const run = async () => {
     }
 
     const siteId = core.getInput('site_id', { required: true });
-    // const siteName = core.getInput('site_name', { required: true });
     const isPreview = core.getInput('is_preview', { required: true });
     const SHA = github.context.payload.pull_request
       ? github.context.payload.pull_request.head.sha
