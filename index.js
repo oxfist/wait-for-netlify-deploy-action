@@ -40,9 +40,10 @@ const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
       log: true,
     });
 
+    console.log('Found deploys from API');
+    console.log('DEBUG:', deploys);
     const commitDeploys = deploys.filter((d) => d.commit_ref === sha);
     console.log('Found commit deploys');
-    console.log('DEBUG: ', commitDeploys);
 
     if (isPreview) {
       const currentDeploy = commitDeploys.find(
@@ -161,11 +162,9 @@ const run = async () => {
     const siteId = core.getInput('site_id', { required: true });
     const isPreview = core.getBooleanInput('is_preview', { required: true });
 
-    console.log('DEBUG: ', github.context);
     const SHA = github.context.payload.pull_request
       ? github.context.payload.pull_request.head.sha
       : github.context.payload.head_commit.id;
-    console.log('DEBUG: ', SHA);
     const MAX_TIMEOUT =
       Number(core.getInput('max_timeout')) || DEFAULT_MAX_TIMEOUT;
     console.log(`Max timeout: ${MAX_TIMEOUT}s`);
