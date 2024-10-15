@@ -138,10 +138,6 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, maxTimeout }) => {
   if (currentDeploy) {
     let url = currentDeploy.deploy_ssl_url;
 
-    // console.log(currentDeploy);
-    // console.log(currentDeploy.id);
-    // console.log(currentDeploy.name);
-    // compose permalink URL without Netlify Preview drawer
     if (['deploy-preview', 'production'].includes(currentDeploy.context)) {
       url = `https://${currentDeploy.id}--${currentDeploy.name}.netlify.app`;
     }
@@ -193,6 +189,7 @@ const run = async () => {
     });
 
     if (deployUrl) {
+      console.log('Setting `url` output to live deploy URL');
       core.setOutput('url', deployUrl);
     } else {
       core.setFailed('Netlify deploy error');
