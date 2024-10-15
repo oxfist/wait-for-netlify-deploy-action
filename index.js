@@ -48,6 +48,7 @@ const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
       const currentDeploy = commitDeploys.find(
         (d) => d.context === 'deploy-preview'
       );
+      // TODO: make sure it works
       if (currentDeploy) console.log('Found deploy preview');
       return currentDeploy;
     } else {
@@ -115,7 +116,11 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, maxTimeout }) => {
     core.setFailed(`Couldn't find Netlify deploys related to commit: ${sha}`);
   }
 
-  console.log('Now waiting for deployment to be live');
+  console.log(
+    `Now waiting for ${
+      isPreview ? 'PREVIEW' : 'NON-PREVIEW'
+    } deployment to be live`
+  );
   currentDeploy = await waitForDeploy({
     siteId,
     isPreview,
@@ -156,10 +161,9 @@ const run = async () => {
     const siteId = core.getInput('site_id', { required: true });
     const isPreview = core.getBooleanInput('is_preview', { required: true });
 
-    const SHA = isPreview
-      ? github.context.payload.pull_request
-        ? github.context.payload.pull_request.head.sha
-        : github.context.payload.head_commit.id
+    console.log('DEBUG: ', github.context);
+    const SHA = github.context.payload.pull_request
+      ? github.context.payload.pull_request.head.sha
       : github.context.payload.head_commit.id;
     console.log('DEBUG: ', SHA);
     const MAX_TIMEOUT =
