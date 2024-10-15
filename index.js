@@ -39,25 +39,23 @@ const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
       path: `sites/${siteId}/deploys`,
       log: true,
     });
-
-    console.log('Found deploys from API');
-    if (!isPreview) console.log('DEBUG:', deploys);
-    const commitDeploys = deploys.filter((d) => d.commit_ref === sha);
-    console.log('Found commit deploys');
+    console.log('Found deploys from Netlify API');
 
     if (isPreview) {
-      const currentDeploy = commitDeploys.find(
+      const commitDeploys = deploys.filter((d) => d.commit_ref === sha);
+      console.log('Found commit deploys');
+
+      const latestPreviewDeploy = commitDeploys.find(
         (d) => d.context === 'deploy-preview'
       );
-      // TODO: make sure it works
-      if (currentDeploy) console.log('Found deploy preview');
-      return currentDeploy;
+      if (latestPreviewDeploy) console.log('Found preview deploy');
+      return latestPreviewDeploy;
     } else {
-      const currentDeploy = commitDeploys.find(
+      const latestProductionDeploy = deploys.find(
         (d) => d.context === 'production'
       );
-      if (currentDeploy) console.log('Found production deploy');
-      return currentDeploy;
+      if (latestProductionDeploy) console.log('Found production deploy');
+      return latestProductionDeploy;
     }
   } catch (err) {
     core.setFailed(err.message);
@@ -67,6 +65,7 @@ const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
 const waitForDeploy = async ({ siteId, isPreview, sha, attemptsRemaining }) => {
   const currentDeploy = await getCurrentDeploy({ siteId, isPreview, sha });
 
+  console.log(`Attempts remaining: ${attemptsRemaining}`);
   if (currentDeploy && attemptsRemaining > 0) {
     if (currentDeploy.state === 'ready') {
       console.log('Deploy is ready');
@@ -75,6 +74,7 @@ const waitForDeploy = async ({ siteId, isPreview, sha, attemptsRemaining }) => {
       console.log('Deploy failed');
       return null;
     } else {
+      console.log('Deploy not yet ready');
       await new Promise((r) => setTimeout(r, 10_000));
 
       return waitForDeploy({
@@ -114,13 +114,19 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, maxTimeout }) => {
   }
 
   if (!currentDeploy) {
-    core.setFailed(`Couldn't find Netlify deploys related to commit: ${sha}`);
+    if (isPreview) {
+      core.setFailed(
+        `Couldn't find Netlify preview deploys related to commit: ${sha}`
+      );
+    } else {
+      core.setFailed("Couldn't find production deploy");
+    }
   }
 
   console.log(
     `Now waiting for ${
       isPreview ? 'PREVIEW' : 'NON-PREVIEW'
-    } deployment to be live`
+    } deployment to have status 'ready'`
   );
   currentDeploy = await waitForDeploy({
     siteId,
@@ -128,6 +134,7 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, maxTimeout }) => {
     sha,
     attemptsRemaining,
   });
+
   if (currentDeploy) {
     let url = currentDeploy.deploy_ssl_url;
 
