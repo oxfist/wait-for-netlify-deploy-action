@@ -5,9 +5,9 @@ const axios = require('axios');
 const API_URL = 'https://api.netlify.com/api/v1/';
 const NETLIFY_TOKEN = process.env.NETLIFY_TOKEN;
 
-const apiGet = async ({ path }) => {
+const getDeploysFromAPI = async ({ path, log }) => {
   try {
-    console.log(`GET: `, path);
+    if (log) console.log('HTTP GET: ', path);
     const config = {
       method: 'get',
       url: new URL(path, API_URL).toString(),
@@ -16,6 +16,13 @@ const apiGet = async ({ path }) => {
       },
     };
     const response = await axios(config);
+
+    if (response.status === 200) {
+      if (log) console.log('HTTP GET 200 RESPONSE');
+    } else {
+      if (log) console.log('HTTP GET NOT SUCCESSFUL');
+    }
+
     return response.data;
   } catch (err) {
     if (err && err.response && err.response.data && err.response.data.message) {
@@ -27,12 +34,22 @@ const apiGet = async ({ path }) => {
 
 const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
   try {
-    const deploys = await apiGet({ path: `sites/${siteId}/deploys` });
-    return deploys.find(
-      (deploy) =>
-        deploy.commit_ref === sha &&
-        deploy.context === (isPreview ? 'deploy-preview' : 'production')
-    );
+    const deploys = await getDeploysFromAPI({
+      path: `sites/${siteId}/deploys`,
+      log: true,
+    });
+
+    const commitDeploys = deploys.filter((d) => d.commit_ref === sha);
+    console.log('Found commit deploys');
+    console.log('DEBUG: ', commitDeploys);
+
+    if (isPreview) {
+      console.log('Found deploy preview');
+      return commitDeploys.find((d) => d.context === 'deploy-preview');
+    } else {
+      console.log('Found production deploy');
+      return commitDeploys.find((d) => d.context === 'production');
+    }
   } catch (err) {
     core.setFailed(err.message);
   }
@@ -40,8 +57,6 @@ const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
 
 const waitForDeploy = async ({ siteId, isPreview, sha, attemptsRemaining }) => {
   const currentDeploy = await getCurrentDeploy({ siteId, isPreview, sha });
-
-  console.log(`Attempts remaining: ${attemptsRemaining}`);
 
   if (currentDeploy && attemptsRemaining > 0) {
     if (currentDeploy.state === 'ready') {
@@ -71,6 +86,7 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, MAX_TIMEOUT }) => {
   let currentDeploy = null;
 
   console.log(`Waiting for a ${isPreview ? 'PREVIEW' : 'NON-PREVIEW'} deploy`);
+  console.log(`Initial attempts ${attemptsRemaining}`);
   for (let i = 0; i < iterations; i++) {
     try {
       currentDeploy = await getCurrentDeploy({ siteId, isPreview, sha });
@@ -78,19 +94,21 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, MAX_TIMEOUT }) => {
         break;
       } else {
         attemptsRemaining--;
-        await new Promise((r) => setTimeout(r, 10000));
+        console.log(`Attempts remaining: ${attemptsRemaining}`);
+        await new Promise((r) => setTimeout(r, 10_000));
       }
     } catch (e) {
       console.log(e);
-      core.setFailed('Wait for Netlify failed');
+      core.setFailed('Wait for Netlify live deploy failed');
       return;
     }
   }
 
   if (!currentDeploy) {
-    core.setFailed(`Can't find Netlify related to commit: ${sha}`);
+    core.setFailed(`Couldn't find Netlify deploys related to commit: ${sha}`);
   }
 
+  console.log('Now waiting for deployment to be live');
   currentDeploy = await waitForDeploy({
     siteId,
     isPreview,
@@ -100,9 +118,9 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, MAX_TIMEOUT }) => {
   if (currentDeploy) {
     let url = currentDeploy.deploy_ssl_url;
 
-    console.log(currentDeploy);
-    console.log(currentDeploy.id);
-    console.log(currentDeploy.name);
+    // console.log(currentDeploy);
+    // console.log(currentDeploy.id);
+    // console.log(currentDeploy.name);
     // compose permalink URL without Netlify Preview drawer
     if (['deploy-preview', 'production'].includes(currentDeploy.context)) {
       url = `https://${currentDeploy.id}--${currentDeploy.name}.netlify.app`;
