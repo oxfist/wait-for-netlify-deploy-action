@@ -41,7 +41,7 @@ const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
     });
 
     console.log('Found deploys from API');
-    console.log('DEBUG:', deploys);
+    if (!isPreview) console.log('DEBUG:', deploys);
     const commitDeploys = deploys.filter((d) => d.commit_ref === sha);
     console.log('Found commit deploys');
 
