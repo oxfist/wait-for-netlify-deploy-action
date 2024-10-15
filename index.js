@@ -2,6 +2,7 @@ const core = require('@actions/core');
 const github = require('@actions/github');
 const axios = require('axios');
 
+const DEFAULT_MAX_TIMEOUT = 120;
 const API_URL = 'https://api.netlify.com/api/v1/';
 const NETLIFY_TOKEN = process.env.NETLIFY_TOKEN;
 
@@ -44,11 +45,17 @@ const getCurrentDeploy = async ({ siteId, isPreview, sha }) => {
     console.log('DEBUG: ', commitDeploys);
 
     if (isPreview) {
-      console.log('Found deploy preview');
-      return commitDeploys.find((d) => d.context === 'deploy-preview');
+      const currentDeploy = commitDeploys.find(
+        (d) => d.context === 'deploy-preview'
+      );
+      if (currentDeploy) console.log('Found deploy preview');
+      return currentDeploy;
     } else {
-      console.log('Found production deploy');
-      return commitDeploys.find((d) => d.context === 'production');
+      const currentDeploy = commitDeploys.find(
+        (d) => d.context === 'production'
+      );
+      if (currentDeploy) console.log('Found production deploy');
+      return currentDeploy;
     }
   } catch (err) {
     core.setFailed(err.message);
@@ -80,14 +87,14 @@ const waitForDeploy = async ({ siteId, isPreview, sha, attemptsRemaining }) => {
   }
 };
 
-const waitForLiveDeploy = async ({ siteId, isPreview, sha, MAX_TIMEOUT }) => {
-  const iterations = MAX_TIMEOUT / 10;
-  let attemptsRemaining = iterations;
+const waitForLiveDeploy = async ({ siteId, isPreview, sha, maxTimeout }) => {
+  const maxAttempts = maxTimeout / 10;
+  let attemptsRemaining = maxAttempts;
   let currentDeploy = null;
 
   console.log(`Waiting for a ${isPreview ? 'PREVIEW' : 'NON-PREVIEW'} deploy`);
-  console.log(`Initial attempts ${attemptsRemaining}`);
-  for (let i = 0; i < iterations; i++) {
+  console.log(`Initial attempts ${maxAttempts}`);
+  for (let i = 0; i < maxAttempts; i++) {
     try {
       currentDeploy = await getCurrentDeploy({ siteId, isPreview, sha });
       if (currentDeploy) {
@@ -148,10 +155,15 @@ const run = async () => {
 
     const siteId = core.getInput('site_id', { required: true });
     const isPreview = core.getBooleanInput('is_preview', { required: true });
-    const SHA = github.context.payload.pull_request
-      ? github.context.payload.pull_request.head.sha
+
+    const SHA = isPreview
+      ? github.context.payload.pull_request
+        ? github.context.payload.pull_request.head.sha
+        : github.context.payload.head_commit.id
       : github.context.payload.head_commit.id;
-    const MAX_TIMEOUT = Number(core.getInput('max_timeout')) || 120;
+    console.log('DEBUG: ', SHA);
+    const MAX_TIMEOUT =
+      Number(core.getInput('max_timeout')) || DEFAULT_MAX_TIMEOUT;
     console.log(`Max timeout: ${MAX_TIMEOUT}s`);
 
     if (!siteId || isPreview === undefined) {
@@ -167,7 +179,7 @@ const run = async () => {
       siteId,
       isPreview,
       sha: SHA,
-      MAX_TIMEOUT,
+      maxTimeout: MAX_TIMEOUT,
     });
 
     if (deployUrl) {

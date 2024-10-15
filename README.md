@@ -15,7 +15,7 @@ steps:
     with:
       site_id: 'curious-hummingbird-9f3bcd' # This is a fake example ID
       is_preview: true
-      max_timeout: 60
+      max_timeout: 120 # in seconds
 ```
 
 ## How it works
@@ -75,7 +75,8 @@ either of these formats:
 
 ### `max_timeout: number`
 
-Optional — The amount of time to spend waiting on Netlify deploy to be created.
+Optional — The amount of time in seconds to spend waiting on Netlify deploy to
+be created. Defaults to `120`.
 
 ## Outputs
 

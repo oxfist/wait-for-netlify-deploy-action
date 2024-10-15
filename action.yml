@@ -13,7 +13,8 @@ inputs:
       false'
     required: true
   max_timeout:
-    description: '(number) The max time to run the action'
+    description:
+      '(number) The max time in seconds to run the action. Defaults to 120'
     required: false
 outputs:
   url:
