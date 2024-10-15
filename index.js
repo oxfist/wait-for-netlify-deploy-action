@@ -150,14 +150,6 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, maxTimeout }) => {
 
 const run = async () => {
   try {
-    const PR_NUMBER = github.context.payload.number;
-
-    if (!PR_NUMBER) {
-      core.setFailed(
-        'Action must be run in conjunction with the `pull_request` event'
-      );
-    }
-
     if (!NETLIFY_TOKEN) {
       core.setFailed('Required env `NETLIFY_TOKEN` was not provided');
     }
