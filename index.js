@@ -95,7 +95,7 @@ const waitForLiveDeploy = async ({ siteId, isPreview, sha, maxTimeout }) => {
   let currentDeploy = null;
 
   console.log(`Waiting for a ${isPreview ? 'PREVIEW' : 'NON-PREVIEW'} deploy`);
-  console.log(`Initial attempts ${maxAttempts}`);
+  console.log(`Initial attempts: ${maxAttempts}`);
   for (let i = 0; i < maxAttempts; i++) {
     try {
       currentDeploy = await getCurrentDeploy({ siteId, isPreview, sha });
